@@ -15,3 +15,11 @@ class ChargingRequestValidatorInputSerializer(serializers.Serializer):
 class ChargingRequestValidatorResponseSerializer(serializers.Serializer):
     status = serializers.CharField(max_length=50, min_length=1, validators=[validate_legalString])
     message = serializers.CharField(max_length=300, min_length=1, validators=[validate_legalString])
+
+
+from .models import ChargingRequestLog
+
+class ChargingRequestLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChargingRequestLog
+        fields = '__all__'  # Include all fields
