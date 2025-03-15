@@ -18,5 +18,5 @@ from django.contrib import admin
 from django.urls import path
 
 urlpatterns = [
-    path("api/", include("apicontrollerapp.urls")),
+    path("api/", include("charging_api.urls")),
 ]

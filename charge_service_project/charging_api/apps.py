@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class ApicontrollerConfig(AppConfig):
+class ChargingApiConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'apicontroller'
+    name = 'charging_api'
