@@ -7,7 +7,7 @@ import sys
 import django
 from datetime import datetime
 from django.utils.dateparse import parse_datetime
-from .models import ChargingRequestLog
+from charging_api.models import ChargingRequestLog
 # 🔹 Set the correct project base directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
