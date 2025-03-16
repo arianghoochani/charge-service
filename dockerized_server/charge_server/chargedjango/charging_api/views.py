@@ -18,35 +18,24 @@ TOPIC_NAME = "charging_requests"
 @api_view(['POST'])
 def chargingRequestValidator(request):
     status = "unknown"
-    # try:
-    serializer = ChargingRequestValidatorInputSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    status = "accepted"
-    # chargingRequestLog = ChargingRequestLog(
-    #         station_id=serializer.validated_data["station_id"],
-    #         driver_token=serializer.validated_data["driver_token"],
-    #         callback_url=serializer.validated_data["callback_url"],
-    #         request_time=now(),
-    #         decision_time=None,
-    #         decision="unknown"
-    #     )
-    # chargingRequestLog.save(force_insert=True)
-    message = {
-        "station_id": serializer.validated_data["station_id"],
-        "driver_token": serializer.validated_data["driver_token"],
-        "callback_url": serializer.validated_data["callback_url"],
-        "request_time": now().isoformat(),
-    }
-    kafka_success = send_to_kafka(TOPIC_NAME, message)
+    try:
+        serializer = ChargingRequestValidatorInputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        status = "accepted"
+        message = {
+            "station_id": serializer.validated_data["station_id"],
+            "driver_token": serializer.validated_data["driver_token"],
+            "callback_url": serializer.validated_data["callback_url"],
+            "request_time": now().isoformat(),
+        }
+        kafka_success = send_to_kafka(TOPIC_NAME, message)
     if not kafka_success:
         status = "failed"
-    # producer.produce(TOPIC_NAME, json.dumps(message))
-    # producer.flush()
-    # except ValidationError :
-    #     attributeName = list(serializer.errors.keys())[0]
-    #     status = attributeName
-    # except:
-    #     status = "unknown"
+    except ValidationError :
+        attributeName = list(serializer.errors.keys())[0]
+        status = attributeName
+    except:
+        status = "unknown"
 
     chargingRequestValidatorResponse = ChargingRequestValidatorResponse(status = status)
     serializer = ChargingRequestValidatorResponseSerializer(chargingRequestValidatorResponse)
