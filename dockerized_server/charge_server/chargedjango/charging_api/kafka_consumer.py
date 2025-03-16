@@ -56,7 +56,7 @@ def send_to_django_api(station_id, driver_token, callback_url, request_time, dec
             "decision": decision,
         }
 
-        response = requests.post(DJANGO_API_URL, json=payload)
+        response = requests.post("http://138.199.214.157/api/getrequestlog/", json=payload)
 
         if response.status_code == 200:
             print(f"✅ SUCCESS: Log sent to Django API -> {payload}")
@@ -93,7 +93,7 @@ def process_messages():
             decision = "allowed" if (station_id, driver_token) in ACL else "not_allowed"
 
             # ✅ **Send data to Django API for saving**
-            # send_to_django_api(station_id, driver_token, callback_url, request_time, decision)
+            send_to_django_api(station_id, driver_token, callback_url, request_time, decision)
 
             # ✅ **Send decision to callback URL**
             try:
