@@ -7,7 +7,6 @@ import sys
 import django
 from datetime import datetime
 from django.utils.dateparse import parse_datetime
-from charging_api.models import ChargingRequestLog
 # 🔹 Set the correct project base directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -20,7 +19,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "charge_service_project.settings
 
 # 🔹 Initialize Django (Even if we don’t use ORM)
 django.setup()
-
+from charging_api.models import ChargingRequestLog
 KAFKA_BROKER = "kafka:9092"
 TOPIC_NAME = "charging_requests"
 
