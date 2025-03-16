@@ -97,23 +97,23 @@ def checkAuthority(request):
 @api_view(['POST'])
 def insertACL(request):
     data = request.data
-    try:
-        if not AccessControlList.objects.filter(ACL_id=acl_id).exists():
-            serializer = InsertACLRequestSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            insertACLRequest = serializer.save()
-            acl_id = insertACLRequest.station_id + insertACLRequest.driver_token
-            acl_entry = AccessControlList(
-                ACL_id=acl_id,
-                station_id=insertACLRequest.station_id,
-                driver_token=insertACLRequest.driver_token,
-            )
-            acl_entry.save(force_insert=True)
-            flag = "success"
-        else:
-            flag = "exists"
-    except:
-        flag = "error"
+    # try:
+    if not AccessControlList.objects.filter(ACL_id=acl_id).exists():
+        serializer = InsertACLRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        insertACLRequest = serializer.save()
+        acl_id = insertACLRequest.station_id + insertACLRequest.driver_token
+        acl_entry = AccessControlList(
+            ACL_id=acl_id,
+            station_id=insertACLRequest.station_id,
+            driver_token=insertACLRequest.driver_token,
+        )
+        acl_entry.save(force_insert=True)
+        flag = "success"
+    else:
+        flag = "exists"
+    # except:
+    #     flag = "error"
     insertACLResponse = InsertACLResponse(flag = flag)
     serializer = InsertACLResponseSerializer(insertACLResponse)    
     return Response(serializer.data)
