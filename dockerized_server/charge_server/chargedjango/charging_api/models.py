@@ -17,3 +17,9 @@ class ChargingRequestLog(models.Model):
         ],
         default="unknown"
     )
+
+class AccessControlList(models.Model):
+    ACL_id = models.CharField(max_length=140,primary_key= True) 
+    station_id = models.CharField(max_length=36) 
+    driver_token = models.CharField(max_length=80) 
+    

@@ -31,3 +31,24 @@ class ChargingRequestValidatorResponse:
         self.status = ChargingRequestValidatorResponse.statusDB[status]["status"]
         self.message = ChargingRequestValidatorResponse.statusDB[status]["message"]
 
+
+class CheckAuthorityRequest:
+    def __init__(self, station_id="", driver_token="", callback_url="", request_time=""):
+        self.station_id = station_id
+        self.driver_token = driver_token
+        self.callback_url = callback_url
+        self.request_time = request_time
+
+class CheckAuthorityResponse:
+    def __init__(self):
+        self.message = message
+
+
+class InsertACLRequest:
+    def __init__(self, station_id="", driver_token=""):
+        self.station_id = station_id
+        self.driver_token = driver_token
+
+class InsertACLResponse:
+    def __init__(self):
+        self.flag = flag

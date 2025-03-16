@@ -1,12 +1,14 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.serializers import ValidationError
+from django.db import IntegrityError
 from django.utils.timezone import now 
-from .serializers import ChargingRequestValidatorInputSerializer, ChargingRequestValidatorResponseSerializer,ChargingRequestLogSerializer
-from .classes import ChargingRequestValidatorResponse
-from .models import ChargingRequestLog
+from .serializers import ChargingRequestValidatorInputSerializer, ChargingRequestValidatorResponseSerializer,ChargingRequestLogSerializer, CheckAuthorityRequestSerializer,CheckAuthorityResponseSerializer,InsertACLRequestSerializer,InsertACLResponseSerializer
+from .classes import ChargingRequestValidatorResponse,CheckAuthorityResponse, CheckAuthorityRequest,InsertACLResponse
+from .models import ChargingRequestLog, AccessControlList
 from confluent_kafka import Producer
 import json
+from datetime import datetime, timedelta
 
 KAFKA_BROKER = "kafka:9092"
 TOPIC_NAME = "charging_requests"
@@ -48,6 +50,77 @@ def chargingRequestValidator(request):
     serializer = ChargingRequestValidatorResponseSerializer(chargingRequestValidatorResponse)
     return Response(serializer.data)
 
+@api_view(['POST'])
+def checkAuthority(request):
+    decision = ""
+    message = ""
+    decisionTime = now()
+    checkAuthorityRequest = CheckAuthorityRequest()
+    try:
+        serializer = CheckAuthorityRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        checkAuthorityRequest = serializer.save()
+        request_time = datetime.fromisoformat(checkAuthorityRequest.replace("Z", "+00:00"))
+        decision_time = datetime.fromisoformat(now().replace("Z", "+00:00"))
+        time_difference = decision_time - request_time
+        if time_difference <= timedelta(minutes=2):
+            ACl_id = checkAuthorityRequest.station_id + checkAuthorityRequest.driver_token
+            if AccessControlList.objects.filter(ACL_id=ACL_id).exists():
+                decision = "allowed"
+                message = "Access granted"
+            else:
+                decision = "not_allowed"
+                message = "Access denied"
+        else:
+            decision = "unknown"
+            message = "Request is too old"
+        chargingRequestLog = ChargingRequestLog(
+        station_id=checkAuthorityRequest.station_id,
+        driver_token= checkAuthorityRequest.driver_token,
+        callback_url=checkAuthorityRequest.callback_url,
+        request_time=checkAuthorityRequest.request_time,
+        decision_time=decision_time,
+        decision=decision
+    )
+        chargingRequestLog.save(force_insert=True)
+    except:
+        message = "An error occurred while proccessing charging request."
+    if checkAuthorityRequest.callback_url:
+        callbackresponse = requests.post(checkAuthorityRequest.callback_url, json={"message": message})
+    checkAuthorityResponse = CheckAuthorityResponse(message = message)
+    serializer = CheckAuthorityResponseSerializer(checkAuthorityResponse)
+
+    return Response(serializer.data)
+    
+ 
+
+@api_view(['POST'])
+def insertACL(request):
+    data = request.data
+    try:
+        if not AccessControlList.objects.filter(ACL_id=acl_id).exists():
+            serializer = InsertACLRequestSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            insertACLRequest = serializer.save()
+            acl_id = insertACLRequest.station_id + insertACLRequest.driver_token
+            acl_entry = AccessControlList(
+                ACL_id=acl_id,
+                station_id=insertACLRequest.station_id,
+                driver_token=insertACLRequest.driver_token,
+            )
+            acl_entry.save(force_insert=True)
+            flag = "success"
+        else:
+            flag = "exists"
+    except:
+        flag = "error"
+    insertACLResponse = InsertACLResponse(flag = flag)
+    serializer = InsertACLRequestSerializer(insertACLResponse)    
+    return Response(serializer.data)
+
+    
+        
+
 
 @api_view(['POST'])
 def insertChargingRequestLog(request):
@@ -76,31 +149,3 @@ def getRequestLog(request):
     return Response(serializer.data)
 
 
-@api_view(['POST'])
-def addACL(request):
-    ACL = [
-        ("550e8400-e29b-41d4-a716-446655440000","user-123~valid.token")
-    ]
-    station_id = request.data.get("station_id")
-    driver_token = request.data.get("driver_token")
-    request_time = request.data.get("request_time")
-    decision = "allowed" if (station_id, driver_token) in ACL else "not_allowed"
-
-    # Log the request
-    try:
-        # Fetch the most recent record that matches the given station_id and driver_token
-        log_entry = ChargingRequestLog.objects.filter(
-            station_id=station_id,
-            driver_token=driver_token
-        ).latest('request_time')  # Get the latest request based on time
-
-        # Update the decision and decision_time
-        log_entry.decision = decision
-        log_entry.decision_time = now()
-        log_entry.save(force_update=True)
-
-        return Response({"status": decision, "message": "Decision updated successfully"})
-
-    except ChargingRequestLog.DoesNotExist:
-        return Response({"status": "error", "message": "No matching record found"}, status=404)
-    
