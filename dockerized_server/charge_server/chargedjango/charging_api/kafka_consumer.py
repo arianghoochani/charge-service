@@ -77,7 +77,12 @@ def process_messages():
         if msg.error():
             print(f"Consumer error: {msg.error()}")
             continue
-        response = requests.post("http://138.199.214.157/api/checkauthority/", json={json.loads(msg.value().decode('utf-8'))})
+        data = json.loads(msg.value().decode('utf-8'))
+        station_id = data.get("station_id")
+        driver_token = data.get("driver_token")
+        callback_url = data.get("callback_url")
+        request_time = parse_datetime(data.get("request_time"))
+        response = requests.post("http://138.199.214.157/api/checkauthority/", json={"station_id": station_id, "driver_token": driver_token,"request_time":request_time,"callback_url":callback_url})
         # # ✅ **Correctly Parse Kafka Message**
         # try:
         #     data = json.loads(msg.value().decode('utf-8'))
