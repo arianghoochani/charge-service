@@ -58,8 +58,23 @@ def process_messages():
         request_time = parse_datetime(data["request_time"])
         if request_time is None:
            request_time = now()  # Use current time if parsing fails
-        chargingRequestLog = ChargingRequestLog(station_id= station_id,driver_token=driver_token,callback_url= callback_url,request_time=request_time,decision_time= now(),decision=decision)
-        chargingRequestLog.save(force_insert=True)
+        # 🔹 DEBUG: Print values before saving
+        print(f"📌 DEBUG: Attempting to save log -> {station_id}, {driver_token}, {decision}")
+
+        try:
+            chargingRequestLog = ChargingRequestLog(
+                station_id=station_id,
+                driver_token=driver_token,
+                callback_url=callback_url,
+                request_time=request_time,
+                decision_time=now(),
+                decision=decision
+            )
+            chargingRequestLog.save(force_insert=True)
+            print("✅ SUCCESS: Log saved!")
+
+        except Exception as e:
+            print(f"❌ ERROR: Could not save log -> {e}")
        
         response = requests.post(callback_url, json={"status": decision})
         print(f"Sent callback response: {response.status_code}")
