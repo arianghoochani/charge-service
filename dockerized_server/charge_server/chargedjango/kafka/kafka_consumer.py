@@ -1,6 +1,7 @@
 from confluent_kafka import Consumer
 import json
 import requests
+import os
 from datetime import datetime
 from django.utils.dateparse import parse_datetime
 from dotenv import load_dotenv
