@@ -115,7 +115,7 @@ def insertACL(request):
     except:
         flag = "error"
     insertACLResponse = InsertACLResponse(flag = flag)
-    serializer = InsertACLRequestSerializer(insertACLResponse)    
+    serializer = InsertACLResponseSerializer(insertACLResponse)    
     return Response(serializer.data)
 
     
