@@ -69,7 +69,7 @@ def checkAuthority(request):
     # time_difference = decision_time - request_time
     # if time_difference <= timedelta(minutes=2):
     if 1 == 1:
-        ACl_id = checkAuthorityRequest.station_id + checkAuthorityRequest.driver_token
+        ACL_id = checkAuthorityRequest.station_id + checkAuthorityRequest.driver_token
         if AccessControlList.objects.filter(ACL_id=ACL_id).exists():
             decision = "allowed"
             message = "Access granted"
