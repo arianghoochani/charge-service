@@ -50,5 +50,5 @@ class InsertACLRequest:
         self.driver_token = driver_token
 
 class InsertACLResponse:
-    def __init__(self):
+    def __init__(self,flag=""):
         self.flag = flag
