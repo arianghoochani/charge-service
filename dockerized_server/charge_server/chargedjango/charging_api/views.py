@@ -5,6 +5,14 @@ from django.utils.timezone import now
 from .serializers import ChargingRequestValidatorInputSerializer, ChargingRequestValidatorResponseSerializer,ChargingRequestLogSerializer
 from .classes import ChargingRequestValidatorResponse
 from .models import ChargingRequestLog
+from confluent_kafka import Producer
+import json
+
+KAFKA_BROKER = "kafka:9092"
+TOPIC_NAME = "charging_requests"
+
+producer_conf = {'bootstrap.servers': KAFKA_BROKER}
+producer = Producer(producer_conf)
 
 @api_view(['POST'])
 def chargingRequestValidator(request):
@@ -22,6 +30,13 @@ def chargingRequestValidator(request):
                 decision="unknown"
             )
         chargingRequestLog.save(force_insert=True)
+        message = {
+            "station_id": serializer.validated_data["station_id"],
+            "driver_token": serializer.validated_data["driver_token"],
+            "callback_url": serializer.validated_data["callback_url"]
+        }
+        producer.produce(TOPIC_NAME, json.dumps(message))
+        producer.flush()
     except ValidationError :
         status_code = "0"
         attributeName = list(serializer.errors.keys())[0]

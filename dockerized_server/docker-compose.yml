@@ -10,7 +10,17 @@ services:
       - 8000:8000
    
     restart: always
+    depends_on:
+      - kafka
   
+  kafka_consumer:
+    build:
+      context: ./charge_server/chargedjango
+    container_name: kafka_consumer
+    command: python charging_api/kafka_consumer.py
+    depends_on:
+      - chargebackend
+      - kafka
   nginx:
     # image: nginx:1.23.4 #latest
     build:
@@ -26,5 +36,9 @@ services:
       - chargebackend
     restart: always
   
-
-
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+  
