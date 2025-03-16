@@ -62,7 +62,8 @@ def checkAuthority(request):
     serializer = CheckAuthorityRequestSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     checkAuthorityRequest = serializer.save()
-    request_time = datetime.fromisoformat(checkAuthorityRequest.replace("Z", "+00:00"))
+    request_time = datetime.fromisoformat(checkAuthorityRequest.request_time.replace("Z", "+00:00"))
+    
     decision_time = datetime.fromisoformat(now().replace("Z", "+00:00"))
     time_difference = decision_time - request_time
     if time_difference <= timedelta(minutes=2):
