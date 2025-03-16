@@ -3,7 +3,7 @@ import json
 import requests
 from datetime import datetime
 from django.utils.dateparse import parse_datetime
-
+from dotenv import load_dotenv
 
 KAFKA_BROKER = "kafka:9092"
 TOPIC_NAME = "charging_requests"
@@ -38,7 +38,9 @@ def process_messages():
             request_time = parse_datetime(data.get("request_time"))
             if request_time is not None:
                 request_time = request_time.isoformat()
-            response = requests.post("http://138.199.214.157/api/checkauthority/", json={"station_id": station_id, "driver_token": driver_token,"request_time":request_time,"callback_url":callback_url})
+            DJANGO_API_URL = os.getenv("DJANGO_API_URL", "http://default-url.com/api/checkauthority/")
+
+            response = requests.post(DJANGO_API_URL, json={"station_id": station_id, "driver_token": driver_token,"request_time":request_time,"callback_url":callback_url})
         except Exception as e:
             print(f"Error occurred while processing message: {e}")
             continue

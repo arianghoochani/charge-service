@@ -56,6 +56,7 @@ services:
     container_name: kafka_consumer
     environment:
       - KAFKA_BROKER=kafka:9092
+      - DJANGO_API_URL=http://138.199.214.157/api/checkauthority/
     command: sh -c "python kafka/kafka_consumer.py"
     depends_on:
       - kafka-init
