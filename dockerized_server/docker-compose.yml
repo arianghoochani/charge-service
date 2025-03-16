@@ -42,6 +42,8 @@ services:
     command: gunicorn charge_service_project.wsgi --bind 0.0.0.0:8000
     ports: 
       - "8000:8000"
+    volumes:
+      - ./charge_server/chargedjango/db.sqlite3:/backend/db.sqlite3
     restart: always
     depends_on:
       - kafka-init
