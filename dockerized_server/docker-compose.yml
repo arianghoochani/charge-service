@@ -1,8 +1,6 @@
-
-version: '3.8'  # Removed deprecated 'version' attribute
+version: '3.8'
 
 services:
-
   zookeeper:
     image: wurstmeister/zookeeper
     container_name: zookeeper
@@ -20,7 +18,23 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     depends_on:
       - zookeeper
+    restart: always
 
+  kafka-init:
+    image: wurstmeister/kafka
+    container_name: kafka-init
+    depends_on:
+      - kafka
+    restart: "no"
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      "
+      # Wait for Kafka to be ready
+      sleep 10
+      # Create topic if it doesn't exist
+      kafka-topics.sh --create --if-not-exists --topic charging_requests --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1
+      "
+  
   chargebackend:
     build:
       context: ./charge_server/chargedjango
@@ -30,16 +44,17 @@ services:
       - "8000:8000"
     restart: always
     depends_on:
-      - kafka
+      - kafka-init
 
   kafka_consumer:
     build:
       context: ./charge_server/chargedjango
     container_name: kafka_consumer
-    command: python charging_api/kafka_consumer.py
+    environment:
+      - KAFKA_BROKER=kafka:9092
+    command: sh -c "python charging_api/kafka_consumer.py"
     depends_on:
-      - chargebackend
-      - kafka
+      - kafka-init
 
   nginx:
     build:
@@ -51,6 +66,7 @@ services:
     depends_on:
       - chargebackend
     restart: always
+
 
 
 
