@@ -41,4 +41,4 @@ class InsertACLRequestSerializer(serializers.Serializer):
         return InsertACLRequest(**validated_data)
 
 class InsertACLResponseSerializer(serializers.Serializer):
-    message = serializers.CharField(max_length=300, min_length=1, validators=[validate_legalString])
+    flag = serializers.CharField(max_length=300, min_length=1, validators=[validate_legalString])
