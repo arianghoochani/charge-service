@@ -3,7 +3,7 @@ version: '3.3'
 services:
   chargebackend:
     build:
-      context: ./charge_server/
+      context: ./charge_server/chargedjango
     container_name: chargebackend
     command: gunicorn charge_service_project.wsgi --bind 0.0.0.0:8000
     ports: 
