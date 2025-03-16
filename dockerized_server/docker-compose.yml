@@ -56,7 +56,7 @@ services:
     container_name: kafka_consumer
     environment:
       - KAFKA_BROKER=kafka:9092
-    command: sh -c "python charging_api/kafka_consumer.py"
+    command: sh -c "python kafka/kafka_consumer.py"
     depends_on:
       - kafka-init
       - chargebackend
@@ -83,47 +83,3 @@ services:
 
 
 
-# version: '3.3'
-
-# services:
-#   chargebackend:
-#     build:
-#       context: ./charge_server/chargedjango
-#     container_name: chargebackend
-#     command: gunicorn charge_service_project.wsgi --bind 0.0.0.0:8000
-#     ports: 
-#       - 8000:8000
-   
-#     restart: always
-#     depends_on:
-#       - kafka
-  
-#   kafka_consumer:
-#     build:
-#       context: ./charge_server/chargedjango
-#     container_name: kafka_consumer
-#     command: python charging_api/kafka_consumer.py
-#     depends_on:
-#       - chargebackend
-#       - kafka
-#   nginx:
-#     # image: nginx:1.23.4 #latest
-#     build:
-#       context: ./charge_server/nginx
-#     container_name: nginx
-#     ports:
-#       - 80:80
-#       - 8080:8080
-#     # volumes:
-#     #   # - ./nginx/nginx-setup.conf:/etc/nginx/conf.d/default.conf:ro
-#     #   # - ./frontend/build:/var/www/react 
-#     depends_on:
-#       - chargebackend
-#     restart: always
-  
-#   zookeeper:
-#     image: wurstmeister/zookeeper
-#     container_name: zookeeper
-#     ports:
-#       - "2181:2181"
-  

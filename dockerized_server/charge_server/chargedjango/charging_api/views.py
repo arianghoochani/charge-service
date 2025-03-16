@@ -6,17 +6,14 @@ from django.utils.timezone import now
 from .serializers import ChargingRequestValidatorInputSerializer, ChargingRequestValidatorResponseSerializer,ChargingRequestLogSerializer, CheckAuthorityRequestSerializer,CheckAuthorityResponseSerializer,InsertACLRequestSerializer,InsertACLResponseSerializer
 from .classes import ChargingRequestValidatorResponse,CheckAuthorityResponse, CheckAuthorityRequest,InsertACLResponse
 from .models import ChargingRequestLog, AccessControlList
-from confluent_kafka import Producer
 import json
 from datetime import datetime, timedelta
 import requests
+from kafka.kafka_producer import send_to_kafka 
 
-
-KAFKA_BROKER = "kafka:9092"
 TOPIC_NAME = "charging_requests"
 
-producer_conf = {'bootstrap.servers': KAFKA_BROKER}
-producer = Producer(producer_conf)
+
 
 @api_view(['POST'])
 def chargingRequestValidator(request):
@@ -40,8 +37,11 @@ def chargingRequestValidator(request):
         "callback_url": serializer.validated_data["callback_url"],
         "request_time": now().isoformat(),
     }
-    producer.produce(TOPIC_NAME, json.dumps(message))
-    producer.flush()
+    kafka_success = send_to_kafka(TOPIC_NAME, message)
+    if not kafka_success:
+        status = "failed"
+    # producer.produce(TOPIC_NAME, json.dumps(message))
+    # producer.flush()
     # except ValidationError :
     #     attributeName = list(serializer.errors.keys())[0]
     #     status = attributeName
@@ -94,8 +94,6 @@ def checkAuthority(request):
     decision=decision
 )
     chargingRequestLog.save(force_insert=True)
-    # except:
-    #     message = "An error occurred while proccessing charging request."
     if checkAuthorityRequest.callback_url:
         callbackresponse = requests.post(checkAuthorityRequest.callback_url, json={"message": message})
     checkAuthorityResponse = CheckAuthorityResponse(message = message)

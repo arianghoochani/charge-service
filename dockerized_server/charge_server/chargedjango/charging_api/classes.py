@@ -25,6 +25,10 @@ class ChargingRequestValidatorResponse:
         "unknown":{
             "status": "rejected",
             "message":"unknown error has been occured."
+        },
+         "failed":{
+            "status": "failed",
+            "message":"failed try again."
         }
     }
     def __init__(self, status = "accepted"):
