@@ -34,7 +34,7 @@ def chargingRequestValidator(request):
         "station_id": serializer.validated_data["station_id"],
         "driver_token": serializer.validated_data["driver_token"],
         "callback_url": serializer.validated_data["callback_url"],
-        "request_time": now(),
+        "request_time": now().isoformat(),
     }
     producer.produce(TOPIC_NAME, json.dumps(message))
     producer.flush()
