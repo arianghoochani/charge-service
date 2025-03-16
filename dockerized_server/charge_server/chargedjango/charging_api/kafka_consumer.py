@@ -3,12 +3,15 @@ import json
 import requests
 from django.utils.timezone import now
 import os
+import sys
 import django
 
-# 🔹 Set up Django environment properly
+# 🔹 Set the correct project base directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# 🔹 Add project directory to PYTHONPATH
+sys.path.append(BASE_DIR)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "charge_service_project.settings")
-os.environ["PYTHONPATH"] = BASE_DIR  # Ensure Django finds the project
 
 # 🔹 Initialize Django
 django.setup()
