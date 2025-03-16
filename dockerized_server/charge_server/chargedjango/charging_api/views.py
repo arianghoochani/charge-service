@@ -50,6 +50,8 @@ def chargingRequestValidator(request):
 
 @api_view(['GET'])
 def getRequestLog(request):
+    from django.db import connection
+    connection.close()
     logs = ChargingRequestLog.objects.all()
 
     # Serialize the queryset
