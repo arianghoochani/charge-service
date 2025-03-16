@@ -5,10 +5,25 @@ services:
     build:
       context: ./charge_server/chargedjango
     container_name: chargebackend
-    command: gunicorn charge_service_project.wsgi --bind 139.199.214.157:8000
+    command: gunicorn charge_service_project.wsgi --bind 0.0.0.0:8000
     ports: 
       - 8000:8000
    
+    restart: always
+  
+  nginx:
+    # image: nginx:1.23.4 #latest
+    build:
+      context: ./charge_server/nginx
+    container_name: nginx
+    ports:
+      - 80:80
+      - 8080:8080
+    # volumes:
+    #   # - ./nginx/nginx-setup.conf:/etc/nginx/conf.d/default.conf:ro
+    #   # - ./frontend/build:/var/www/react 
+    depends_on:
+      - chargebackend
     restart: always
   
 
