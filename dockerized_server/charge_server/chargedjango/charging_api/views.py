@@ -47,40 +47,35 @@ def checkAuthority(request):
     message = ""
     decision_time = now()
     checkAuthorityRequest = CheckAuthorityRequest()
-    # try:
-    serializer = CheckAuthorityRequestSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    checkAuthorityRequest = serializer.save()
-    request_time = datetime.fromisoformat(str(checkAuthorityRequest.request_time).replace("Z", "+00:00"))
-    # print(f"request_time : {request_time}")
-    # print(f"request_time : {type(request_time)}")
-    decision_time = datetime.fromisoformat(str(decision_time).replace("Z", "+00:00"))
-    # print(f"decision_time : {decision_time}")
-    # print(f"decision_time : {type(decision_time)}")
-    # time_difference = decision_time - request_time
-    # if time_difference <= timedelta(minutes=2):
-    time_difference = abs(decision_time - request_time)
-    # print(time_difference)
-    if (request_time.date() == decision_time.date()) and (time_difference <= timedelta(minutes=30)):
-        ACL_id = checkAuthorityRequest.station_id + checkAuthorityRequest.driver_token
-        if AccessControlList.objects.filter(ACL_id=ACL_id).exists():
-            decision = "allowed"
-            message = "Access granted"
+    try:
+        serializer = CheckAuthorityRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        checkAuthorityRequest = serializer.save()
+        request_time = datetime.fromisoformat(str(checkAuthorityRequest.request_time).replace("Z", "+00:00"))
+        decision_time = datetime.fromisoformat(str(decision_time).replace("Z", "+00:00"))
+        time_difference = abs(decision_time - request_time)
+        if (request_time.date() == decision_time.date()) and (time_difference <= timedelta(minutes=30)):
+            ACL_id = checkAuthorityRequest.station_id + checkAuthorityRequest.driver_token
+            if AccessControlList.objects.filter(ACL_id=ACL_id).exists():
+                decision = "allowed"
+                message = "Access granted"
+            else:
+                decision = "not_allowed"
+                message = "Access denied"
         else:
-            decision = "not_allowed"
-            message = "Access denied"
-    else:
-        decision = "unknown"
-        message = "Request is too old"
-    chargingRequestLog = ChargingRequestLog(
-    station_id=checkAuthorityRequest.station_id,
-    driver_token= checkAuthorityRequest.driver_token,
-    callback_url=checkAuthorityRequest.callback_url,
-    request_time=checkAuthorityRequest.request_time,
-    decision_time=decision_time,
-    decision=decision
-    )
-    chargingRequestLog.save(force_insert=True)
+            decision = "unknown"
+            message = "Request is too old"
+        chargingRequestLog = ChargingRequestLog(
+        station_id=checkAuthorityRequest.station_id,
+        driver_token= checkAuthorityRequest.driver_token,
+        callback_url=checkAuthorityRequest.callback_url,
+        request_time=checkAuthorityRequest.request_time,
+        decision_time=decision_time,
+        decision=decision
+        )
+        chargingRequestLog.save(force_insert=True)
+    except :
+        message = "An error occured, try again"
     if checkAuthorityRequest.callback_url:
         callbackresponse = requests.post(checkAuthorityRequest.callback_url, json={"message": message})
     checkAuthorityResponse = CheckAuthorityResponse(message = message)
@@ -93,25 +88,25 @@ def checkAuthority(request):
 @api_view(['POST'])
 def insertACL(request):
     data = request.data
-    # try:
-    serializer = InsertACLRequestSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    insertACLRequest = serializer.save()
-    acl_id = insertACLRequest.station_id + insertACLRequest.driver_token
+    try:
+        serializer = InsertACLRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        insertACLRequest = serializer.save()
+        acl_id = insertACLRequest.station_id + insertACLRequest.driver_token
 
-    if not AccessControlList.objects.filter(ACL_id=acl_id).exists():
-        
-        acl_entry = AccessControlList(
-            ACL_id=acl_id,
-            station_id=insertACLRequest.station_id,
-            driver_token=insertACLRequest.driver_token,
-        )
-        acl_entry.save(force_insert=True)
-        flag = "success"
-    else:
-        flag = "exists"
-    # except:
-    #     flag = "error"
+        if not AccessControlList.objects.filter(ACL_id=acl_id).exists():
+            
+            acl_entry = AccessControlList(
+                ACL_id=acl_id,
+                station_id=insertACLRequest.station_id,
+                driver_token=insertACLRequest.driver_token,
+            )
+            acl_entry.save(force_insert=True)
+            flag = "success"
+        else:
+            flag = "exists"
+    except:
+        flag = "error"
     insertACLResponse = InsertACLResponse(flag = flag)
     serializer = InsertACLResponseSerializer(insertACLResponse)    
     return Response(serializer.data)
