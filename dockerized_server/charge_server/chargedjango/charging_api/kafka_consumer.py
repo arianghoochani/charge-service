@@ -1,4 +1,3 @@
-import sqlite3
 from confluent_kafka import Consumer
 import json
 import requests
@@ -12,8 +11,8 @@ from django.utils.dateparse import parse_datetime
 # 🔹 Set the correct project base directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# 🔹 SQLite Database Path
-DB_PATH = os.path.join(BASE_DIR, "db.sqlite3")
+# 🔹 Django API URL for inserting logs
+DJANGO_API_URL = "http://chargebackend:8000/api/insertchargingrequestlog/"
 
 # 🔹 Add project directory to PYTHONPATH
 sys.path.append(BASE_DIR)
@@ -37,33 +36,35 @@ ACL = [
     ("550e8400-e29b-41d4-a716-446655440000", "user-123~valid.token")
 ]
 
-def insert_into_db(station_id, driver_token, callback_url, request_time, decision):
+def send_to_django_api(station_id, driver_token, callback_url, request_time, decision):
     """
-    Inserts data directly into SQLite database without using Django ORM.
+    Sends the charging request data to Django API for saving.
     """
     try:
-        conn = sqlite3.connect(DB_PATH)  # Connect to SQLite
-        cursor = conn.cursor()
-
-        # 🔹 Convert request_time to string if needed
+        # Convert datetime to string
         if isinstance(request_time, datetime):
             request_time = request_time.isoformat()
 
         decision_time = now().isoformat()
 
-        # 🔹 Insert query
-        cursor.execute("""
-            INSERT INTO charging_api_chargingrequestlog 
-            (station_id, driver_token, callback_url, request_time, decision_time, decision) 
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (station_id, driver_token, callback_url, request_time, decision_time, decision))
+        payload = {
+            "station_id": station_id,
+            "driver_token": driver_token,
+            "callback_url": callback_url,
+            "request_time": request_time,
+            "decision_time": decision_time,
+            "decision": decision,
+        }
 
-        conn.commit()  # Save changes
-        conn.close()  # Close connection
-        print(f"✅ SUCCESS: Manually inserted record -> {station_id}, {driver_token}")
+        response = requests.post(DJANGO_API_URL, json=payload)
 
-    except sqlite3.Error as e:
-        print(f"❌ ERROR: SQLite Insert Failed -> {e}")
+        if response.status_code == 200:
+            print(f"✅ SUCCESS: Log sent to Django API -> {payload}")
+        else:
+            print(f"❌ ERROR: Django API failed -> {response.status_code} - {response.text}")
+
+    except requests.RequestException as e:
+        print(f"❌ ERROR: Failed to send data to Django API -> {e}")
 
 
 def process_messages():
@@ -91,22 +92,23 @@ def process_messages():
 
             decision = "allowed" if (station_id, driver_token) in ACL else "not_allowed"
 
-            #  **Insert into SQLite manually**
-            insert_into_db(station_id, driver_token, callback_url, request_time, decision)
+            # ✅ **Send data to Django API for saving**
+            # send_to_django_api(station_id, driver_token, callback_url, request_time, decision)
 
-            #  **Send decision to callback URL**
+            # ✅ **Send decision to callback URL**
             try:
                 response = requests.post(callback_url, json={"status": decision})
-                print(f"Sent callback response: {response.status_code}")
+                print(f"✅ Sent callback response: {response.status_code}")
             except requests.RequestException as e:
-                print(f" ERROR: Failed to send callback -> {e}")
+                print(f"❌ ERROR: Failed to send callback -> {e}")
 
         except Exception as e:
-            print(f" ERROR: Failed to process Kafka message -> {e}")
+            print(f"❌ ERROR: Failed to process Kafka message -> {e}")
 
 
 if __name__ == "__main__":
     process_messages()
+
 
 
 # from confluent_kafka import Consumer

@@ -3,6 +3,6 @@ from . import views
 
 urlpatterns = [
     path('chargingRequestValidator/',views.chargingRequestValidator,name='chargingRequestValidator'),
-    path('getrequestlog/',views.getRequestLog,name='getRequestLog'),
+    path('insertlog/',views.insertChargingRequestLog,name='insertChargingRequestLog'),
     path('addacl/',views.addACL,name='addACL'),
     ]

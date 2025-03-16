@@ -48,6 +48,21 @@ def chargingRequestValidator(request):
     serializer = ChargingRequestValidatorResponseSerializer(chargingRequestValidatorResponse)
     return Response(serializer.data)
 
+
+@api_view(['POST'])
+def insertChargingRequestLog(request):
+    data = request.data
+    chargingRequestLog = ChargingRequestLog(
+            station_id=data["station_id"],
+            driver_token=data["driver_token"],
+            callback_url=data["callback_url"],
+            request_time=data["request_time"],
+            decision_time=data["decision_time"],
+            decision=data["decision"]
+        )
+    chargingRequestLog.save(force_insert=True)
+    return Response({"status": "Log saved successfully"})
+
 @api_view(['GET'])
 def getRequestLog(request):
     from django.db import connection
