@@ -66,7 +66,7 @@ def checkAuthority(request):
     # request_time = datetime.fromisoformat(checkAuthorityRequest.request_time.replace("Z", "+00:00"))
     print(f"request_time : {checkAuthorityRequest.request_time}")
     print(f"request_time : {type(checkAuthorityRequest.request_time)}")
-    decision_time = datetime.fromisoformat(now().replace("Z", "+00:00"))
+    # decision_time = datetime.fromisoformat(now().replace("Z", "+00:00"))
     print(f"decision_time : {decision_time}")
     print(f"decision_time : {type(decision_time)}")
     # time_difference = decision_time - request_time
