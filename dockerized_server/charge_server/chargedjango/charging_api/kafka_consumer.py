@@ -82,6 +82,8 @@ def process_messages():
         driver_token = data.get("driver_token")
         callback_url = data.get("callback_url")
         request_time = parse_datetime(data.get("request_time"))
+        if request_time is not None:
+            request_time = request_time.isoformat()
         response = requests.post("http://138.199.214.157/api/checkauthority/", json={"station_id": station_id, "driver_token": driver_token,"request_time":request_time,"callback_url":callback_url})
         # # ✅ **Correctly Parse Kafka Message**
         # try:
