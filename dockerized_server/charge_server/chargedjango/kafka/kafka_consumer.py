@@ -5,7 +5,6 @@ from datetime import datetime
 from django.utils.dateparse import parse_datetime
 
 
-from charging_api.models import ChargingRequestLog
 KAFKA_BROKER = "kafka:9092"
 TOPIC_NAME = "charging_requests"
 
