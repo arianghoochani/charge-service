@@ -98,11 +98,13 @@ def checkAuthority(request):
 def insertACL(request):
     data = request.data
     # try:
+    serializer = InsertACLRequestSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    insertACLRequest = serializer.save()
+    acl_id = insertACLRequest.station_id + insertACLRequest.driver_token
+
     if not AccessControlList.objects.filter(ACL_id=acl_id).exists():
-        serializer = InsertACLRequestSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        insertACLRequest = serializer.save()
-        acl_id = insertACLRequest.station_id + insertACLRequest.driver_token
+        
         acl_entry = AccessControlList(
             ACL_id=acl_id,
             station_id=insertACLRequest.station_id,
