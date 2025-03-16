@@ -5,7 +5,8 @@ from django.utils.timezone import now
 import os
 import sys
 import django
-
+from datetime import datetime
+from django.utils.dateparse import parse_datetime
 # 🔹 Set the correct project base directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -50,24 +51,16 @@ def process_messages():
         station_id = data["station_id"]
         driver_token = data["driver_token"]
         callback_url = data["callback_url"]
-        request_time = data["request_time"]
+        # request_time = data["request_time"]
 
         decision = "allowed" if (station_id, driver_token) in ACL else "not_allowed"
 
-        # try:
-            # Fetch and update log
+        request_time = parse_datetime(data["request_time"])
+        if request_time is None:
+           request_time = now()  # Use current time if parsing fails
         chargingRequestLog = ChargingRequestLog(station_id= station_id,driver_token=driver_token,callback_url= callback_url,request_time=request_time,decision_time= now(),decision=decision)
         chargingRequestLog.save(force_insert=True)
-        # log_entry = ChargingRequestLog.objects.filter(
-        #     station_id=station_id,
-        #     driver_token=driver_token
-        # )
-        # chargingRequestLog.create()
-        # log_entry.decision = decision
-        # log_entry.decision_time = now()
-        # log_entry.save()
-
-        # Send decision to callback URL
+       
         response = requests.post(callback_url, json={"status": decision})
         print(f"Sent callback response: {response.status_code}")
 
