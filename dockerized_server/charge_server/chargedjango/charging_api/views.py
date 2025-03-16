@@ -56,7 +56,7 @@ def chargingRequestValidator(request):
 def checkAuthority(request):
     decision = ""
     message = ""
-    decisionTime = now()
+    decision_time = now()
     checkAuthorityRequest = CheckAuthorityRequest()
     # try:
     serializer = CheckAuthorityRequestSerializer(data=request.data)
