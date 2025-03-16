@@ -9,6 +9,8 @@ from .models import ChargingRequestLog, AccessControlList
 from confluent_kafka import Producer
 import json
 from datetime import datetime, timedelta
+import requests
+
 
 KAFKA_BROKER = "kafka:9092"
 TOPIC_NAME = "charging_requests"
