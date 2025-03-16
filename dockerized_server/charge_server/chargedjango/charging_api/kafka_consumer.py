@@ -93,8 +93,16 @@ def process_messages():
             decision = "allowed" if (station_id, driver_token) in ACL else "not_allowed"
 
             # ✅ **Send data to Django API for saving**
-            send_to_django_api(station_id, driver_token, callback_url, request_time, decision)
-
+            # send_to_django_api(station_id, driver_token, callback_url, request_time, decision)
+            chargingRequestLog = ChargingRequestLog(
+            station_id=station_id,
+            driver_token=driver_token,
+            callback_url=callback_url,
+            request_time=request_time,
+            decision_time=now(),
+            decision=decision
+        )
+            chargingRequestLog.save(force_insert=True)
             # ✅ **Send decision to callback URL**
             try:
                 response = requests.post(callback_url, json={"status": decision})
