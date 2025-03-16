@@ -29,8 +29,8 @@ def chargingRequestValidator(request):
             "request_time": now().isoformat(),
         }
         kafka_success = send_to_kafka(TOPIC_NAME, message)
-    if not kafka_success:
-        status = "failed"
+        if not kafka_success:
+            status = "failed"
     except ValidationError :
         attributeName = list(serializer.errors.keys())[0]
         status = attributeName
@@ -51,18 +51,16 @@ def checkAuthority(request):
     serializer = CheckAuthorityRequestSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     checkAuthorityRequest = serializer.save()
-    # request_time = datetime.fromisoformat(str(checkAuthorityRequest.request_time))
-    # request_time = datetime.fromisoformat(checkAuthorityRequest.request_time.replace("Z", "+00:00"))
     request_time = datetime.fromisoformat(str(checkAuthorityRequest.request_time).replace("Z", "+00:00"))
-    print(f"request_time : {request_time}")
-    print(f"request_time : {type(request_time)}")
+    # print(f"request_time : {request_time}")
+    # print(f"request_time : {type(request_time)}")
     decision_time = datetime.fromisoformat(str(decision_time).replace("Z", "+00:00"))
-    print(f"decision_time : {decision_time}")
-    print(f"decision_time : {type(decision_time)}")
+    # print(f"decision_time : {decision_time}")
+    # print(f"decision_time : {type(decision_time)}")
     # time_difference = decision_time - request_time
     # if time_difference <= timedelta(minutes=2):
     time_difference = abs(decision_time - request_time)
-    print(time_difference)
+    # print(time_difference)
     if (request_time.date() == decision_time.date()) and (time_difference <= timedelta(minutes=30)):
         ACL_id = checkAuthorityRequest.station_id + checkAuthorityRequest.driver_token
         if AccessControlList.objects.filter(ACL_id=ACL_id).exists():
@@ -81,7 +79,7 @@ def checkAuthority(request):
     request_time=checkAuthorityRequest.request_time,
     decision_time=decision_time,
     decision=decision
-)
+    )
     chargingRequestLog.save(force_insert=True)
     if checkAuthorityRequest.callback_url:
         callbackresponse = requests.post(checkAuthorityRequest.callback_url, json={"message": message})
@@ -122,19 +120,19 @@ def insertACL(request):
         
 
 
-@api_view(['POST'])
-def insertChargingRequestLog(request):
-    data = request.data
-    chargingRequestLog = ChargingRequestLog(
-            station_id=data["station_id"],
-            driver_token=data["driver_token"],
-            callback_url=data["callback_url"],
-            request_time=data["request_time"],
-            decision_time=data["decision_time"],
-            decision=data["decision"]
-        )
-    chargingRequestLog.save(force_insert=True)
-    return Response({"status": "Log saved successfully"})
+# @api_view(['POST'])
+# def insertChargingRequestLog(request):
+#     data = request.data
+#     chargingRequestLog = ChargingRequestLog(
+#             station_id=data["station_id"],
+#             driver_token=data["driver_token"],
+#             callback_url=data["callback_url"],
+#             request_time=data["request_time"],
+#             decision_time=data["decision_time"],
+#             decision=data["decision"]
+#         )
+#     chargingRequestLog.save(force_insert=True)
+#     return Response({"status": "Log saved successfully"})
 
 @api_view(['GET'])
 def getRequestLog(request):
@@ -142,10 +140,8 @@ def getRequestLog(request):
     connection.close()
     logs = ChargingRequestLog.objects.all()
 
-    # Serialize the queryset
     serializer = ChargingRequestLogSerializer(logs, many=True)
 
-    # Return the JSON response
     return Response(serializer.data)
 
 
