@@ -1,18 +1,35 @@
-version: '3.3'
+
+version: '3.8'  # Removed deprecated 'version' attribute
 
 services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: wurstmeister/kafka
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    depends_on:
+      - zookeeper
+
   chargebackend:
     build:
       context: ./charge_server/chargedjango
     container_name: chargebackend
     command: gunicorn charge_service_project.wsgi --bind 0.0.0.0:8000
     ports: 
-      - 8000:8000
-   
+      - "8000:8000"
     restart: always
     depends_on:
       - kafka
-  
+
   kafka_consumer:
     build:
       context: ./charge_server/chargedjango
@@ -21,24 +38,67 @@ services:
     depends_on:
       - chargebackend
       - kafka
+
   nginx:
-    # image: nginx:1.23.4 #latest
     build:
       context: ./charge_server/nginx
     container_name: nginx
     ports:
-      - 80:80
-      - 8080:8080
-    # volumes:
-    #   # - ./nginx/nginx-setup.conf:/etc/nginx/conf.d/default.conf:ro
-    #   # - ./frontend/build:/var/www/react 
+      - "80:80"
+      - "8080:8080"
     depends_on:
       - chargebackend
     restart: always
+
+
+
+
+
+
+
+
+
+# version: '3.3'
+
+# services:
+#   chargebackend:
+#     build:
+#       context: ./charge_server/chargedjango
+#     container_name: chargebackend
+#     command: gunicorn charge_service_project.wsgi --bind 0.0.0.0:8000
+#     ports: 
+#       - 8000:8000
+   
+#     restart: always
+#     depends_on:
+#       - kafka
   
-  zookeeper:
-    image: wurstmeister/zookeeper
-    container_name: zookeeper
-    ports:
-      - "2181:2181"
+#   kafka_consumer:
+#     build:
+#       context: ./charge_server/chargedjango
+#     container_name: kafka_consumer
+#     command: python charging_api/kafka_consumer.py
+#     depends_on:
+#       - chargebackend
+#       - kafka
+#   nginx:
+#     # image: nginx:1.23.4 #latest
+#     build:
+#       context: ./charge_server/nginx
+#     container_name: nginx
+#     ports:
+#       - 80:80
+#       - 8080:8080
+#     # volumes:
+#     #   # - ./nginx/nginx-setup.conf:/etc/nginx/conf.d/default.conf:ro
+#     #   # - ./frontend/build:/var/www/react 
+#     depends_on:
+#       - chargebackend
+#     restart: always
+  
+#   zookeeper:
+#     image: wurstmeister/zookeeper
+#     container_name: zookeeper
+#     ports:
+#       - "2181:2181"
   
