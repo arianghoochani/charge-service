@@ -53,23 +53,23 @@ def process_messages():
 
         decision = "allowed" if (station_id, driver_token) in ACL else "not_allowed"
 
-        try:
+        # try:
             # Fetch and update log
-            log_entry = ChargingRequestLog.objects.filter(
-                station_id=station_id,
-                driver_token=driver_token
-            ).latest('request_time')
+        log_entry = ChargingRequestLog.objects.filter(
+            station_id=station_id,
+            driver_token=driver_token
+        ).latest('request_time')
 
-            log_entry.decision = decision
-            log_entry.decision_time = now()
-            log_entry.save()
+        log_entry.decision = decision
+        log_entry.decision_time = now()
+        log_entry.save()
 
-            # Send decision to callback URL
-            response = requests.post(callback_url, json={"status": decision})
-            print(f"Sent callback response: {response.status_code}")
+        # Send decision to callback URL
+        response = requests.post(callback_url, json={"status": decision})
+        print(f"Sent callback response: {response.status_code}")
 
-        except ChargingRequestLog.DoesNotExist:
-            print(f"No matching record found for {station_id}, {driver_token}")
+        # except ChargingRequestLog.DoesNotExist:
+        #     print(f"No matching record found for {station_id}, {driver_token}")
 
 if __name__ == "__main__":
     process_messages()
