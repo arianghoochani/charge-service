@@ -56,7 +56,7 @@ def send_to_django_api(station_id, driver_token, callback_url, request_time, dec
             "decision": decision,
         }
 
-        response = requests.post("http://138.199.214.157/api/getrequestlog/", json=payload)
+        response = requests.post("http://138.199.214.157/api/insertlog/", json=payload)
 
         if response.status_code == 200:
             print(f"✅ SUCCESS: Log sent to Django API -> {payload}")
