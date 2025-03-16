@@ -40,7 +40,7 @@ class CheckAuthorityRequest:
         self.request_time = request_time
 
 class CheckAuthorityResponse:
-    def __init__(self):
+    def __init__(self,message):
         self.message = message
 
 
