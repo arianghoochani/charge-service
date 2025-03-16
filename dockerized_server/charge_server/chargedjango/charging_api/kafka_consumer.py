@@ -2,12 +2,15 @@ from confluent_kafka import Consumer
 import json
 import requests
 from django.utils.timezone import now
-from django.core.wsgi import get_wsgi_application
 import os
 import django
 
-# Set up Django environment
+# 🔹 Set up Django environment properly
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "charge_service_project.settings")
+os.environ["PYTHONPATH"] = BASE_DIR  # Ensure Django finds the project
+
+# 🔹 Initialize Django
 django.setup()
 
 from charging_api.models import ChargingRequestLog
