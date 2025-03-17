@@ -62,8 +62,9 @@ docker-compose up -d
 
 | Endpoint                         | Method | Request Fields | Response Fields | Description |
 |----------------------------------|--------|----------------|----------------|-------------|
-| `/api/insertACL/`                | POST   | `station_id`, `driver_token` | `flag` | Adds new authorized drivers and stations to allow charging. |
 | `/api/chargingRequestValidator/` | POST   | `station_id`, `driver_token`, `callback_url` | `status`, `message` | Main controller API: Receives charging requests, passes them to internal APIs, and queues them for processing. |
+| `/api/checkauthority/`           | POST   | `station_id`, `driver_token`, `request_time`, `callback_url` | `message` | Internal authorization service, **never called directly**. Requests are processed asynchronously via Kafka. |
+| `/api/insertACL/`                | POST   | `station_id`, `driver_token` | `flag` | Adds new authorized drivers and stations to allow charging. |
 | `/api/getrequestlog/`            | GET    | None           | `id`, `station_id`, `driver_token`, `callback_url`, `request_time`, `decision_time`, `decision` | Retrieves a list of all charging requests, useful for monitoring system activity. |
 
 
