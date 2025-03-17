@@ -45,7 +45,7 @@ Modify the Kafka Consumer Service section (line 59):
 
 ```
 Replace http://YOUR_SERVER_IP with your server's actual IP.
-
+#### 
 ### 3️⃣ Build & Run the Service
 ```sh
 docker compose build
@@ -57,7 +57,16 @@ docker-compose build
 docker-compose up -d
 ```
 
+Before making any charging requests, **you must first insert authorized station and driver tokens** into the Access Control List (ACL) using the following API:
 
+```bash
+curl -X POST http://YOUR_SERVER_IP/api/insertACL/ \
+     -H "Content-Type: application/json" \
+     -d '{
+           "station_id": "531111111111111111111111111111111111",
+           "driver_token": "driver_token_2025_valid"
+         }'
+         ```
 ### API Endpoints
 
 | Endpoint                         | Method | Request Fields | Response Fields | Description |
