@@ -66,7 +66,7 @@ curl -X POST http://YOUR_SERVER_IP/api/insertACL/ \
            "station_id": "531111111111111111111111111111111111",
            "driver_token": "driver_token_2025_valid"
          }'
-         ```
+```
 ### API Endpoints
 
 | Endpoint                         | Method | Request Fields | Response Fields | Description |
